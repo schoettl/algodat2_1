@@ -7,6 +7,7 @@
  */
 
 #include <iostream>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -24,19 +25,24 @@ Vertex* promptForExistingVertex(const Graph& g);
 void insertEdge(Graph& g);
 void showMenu();
 void testGraph(Graph& graph);
+void parseAndProcessArgs(int argc, char** argv, Graph& graph);
+void solveUsingSimulatedAnnealing(Graph& graph);
+void solveUsingPrimsAlgorithm(Graph& graph);
+void exitWithError(const string& message);
 
 
 int main(int argc, char** argv) {
 	cout << "Algorithmen und Datenstrukturen II" << endl
 	     << "Praktikum -- Uebung 1" << endl
 	     << "Jakob Schoettl <jschoett@hm.edu>" << endl << endl
-	     << "Usage: algraph [GRAPH_DESCRIPTION_FILE]" << endl << endl;
+	     << "Usage: algraph [[-a|-p] GRAPH_DESCRIPTION_FILE]" << endl
+	     << " -a  Solve traveling salesman problem using simulated annealing" << endl
+	     << " -p  Solve traveling salesman problem using Prim's algorithm" << endl
+	     << "Both options start the program in non-interactive mode." << endl << endl;
 
 	Graph graph;
 
-	if (argc > 1) {
-		readGraphFromFile(graph, argv[1]);
-	} //else testGraph(graph);
+	parseAndProcessArgs(argc, argv, graph);
 
 	showMenu();
 
@@ -54,9 +60,12 @@ int main(int argc, char** argv) {
 		case 'e':
 			insertEdge(graph);
 			break;
-		case 'c':
-			graph.prim();
-			graph.cycle(cout);
+		case 'p':
+			solveUsingPrimsAlgorithm(graph);
+			operationComplete("Ready.");
+			break;
+		case 'a':
+			solveUsingSimulatedAnnealing(graph);
 			operationComplete("Ready.");
 			break;
 		case 'q':
@@ -83,6 +92,9 @@ Vertex* findOrInsertVertex(Graph& g, const string& vertexName) {
 
 void readGraphFromFile(Graph& graph, const string& filename) {
 	ifstream infile(filename.c_str());
+	if (!ifstream) {
+		exitWithError("Error opening graph description file: " + filename);
+	}
 	string line;
 	while (getline(infile, line)) {
 		istringstream lineStream(line);
@@ -93,7 +105,9 @@ void readGraphFromFile(Graph& graph, const string& filename) {
 		Vertex* b = findOrInsertVertex(graph, name2);
 		graph.insertEdge(a, b, weight);
 	}
-	operationComplete("Read graph description file.");
+	if (!ifstream) {
+		exitWithError("Error processing graph description file: " + filename);
+	}
 }
 
 void insertVertex(Graph& g) {
@@ -173,4 +187,46 @@ void testGraph(Graph& graph) {
 
 	graph.prim();
 	graph.cycle(cout);
+}
+
+void parseAndProcessArgs(int argc, char** argv, Graph& graph) {
+	if (argc == 1) {
+		readGraphFromFile(graph, argv[1]);
+		operationComplete("Read graph description file.");
+		return;
+	}
+
+	if (argc == 2) {
+		string option = argv[1];
+		readGraphFromFile(graph, argv[2]);
+
+		if (option == "-p") {
+			solveUsingPrimsAlgorithm(graph);
+		} else if (option == "-a") {
+			solveUsingSimulatedAnnealing(graph);
+		} else {
+			exitWithError("Invalid option: " + option);
+		}
+		exit(EXIT_SUCCESS);
+	}
+
+	if (argc > 2) {
+		exitWithError("Invalid number of arguments.");
+	}
+}
+
+void solveUsingSimulatedAnnealing(Graph& graph) {
+	SimulatedAnnealingSolver solver(graph);
+	solver.calculateSolution();
+	solver.outputResult(cout);
+}
+
+void solveUsingPrimsAlgorithm(Graph& graph) {
+	graph.prim();
+	graph.cycle(cout);
+}
+
+void exitWithError(const string& message) {
+	cerr << message << endl;
+	exit(EXIT_FAILURE);
 }
