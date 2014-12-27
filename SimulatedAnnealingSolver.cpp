@@ -106,6 +106,9 @@ void SimulatedAnnealingSolver::initializeCycleRandomly() {
 		v = v->getNextVertex();
 	}
 
+	// Zyklus verwürfeln
+	random_shuffle(cycle.begin(), cycle.end());
+
 	// Gewichte aufaddieren
 	vector<Vertex*>::iterator it = cycle.begin();
 	Vertex* first = *it;
@@ -115,9 +118,6 @@ void SimulatedAnnealingSolver::initializeCycleRandomly() {
 		prev = *it;
 	}
 	cycleLength += graph.findEdgeBetween(prev, first)->getWeight();
-
-	// Zyklus verwürfeln
-	random_shuffle(cycle.begin(), cycle.end());
 }
 
 int SimulatedAnnealingSolver::calculateLengthDifference(const Vertex* v1, const Vertex* v2, const Vertex* v3, const Vertex* v4) {
