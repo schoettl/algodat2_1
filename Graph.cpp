@@ -98,7 +98,7 @@ void Graph::cycle(ostream& outstream) {
 	// durch prim() erzeugten MST/Baum per NLR durchgehen und mit Entfernungen ausgeben
 	outstream << rootOfMst->getName();
 	Vertex* lastVertex = traverseChilds(rootOfMst, outstream);
-	// Zyklus schiessen
+	// Zyklus schliessen
 	Edge* edgeBetween = findEdgeBetween(lastVertex->getName(), rootOfMst->getName());
 	outstream << " - " << edgeBetween->getWeight() << " - " << rootOfMst->getName() << endl;
 }
@@ -131,7 +131,7 @@ Vertex* Graph::traverseChilds(Vertex* parentVertex, ostream& outstream) {
 	return lastVisitedVertex;
 }
 
-Edge* Graph::findEdgeBetween(Vertex* v1, Vertex* v2) {
+Edge* Graph::findEdgeBetween(const Vertex* v1, const Vertex* v2) {
 	Edge* e = v1->getFirstEdge();
 	while (e) {
 		if (e->getTargetVertex() == v2) {

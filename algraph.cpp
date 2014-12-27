@@ -14,6 +14,7 @@
 #include <cassert>
 
 #include "Graph.h"
+#include "SimulatedAnnealingSolver.h"
 
 using namespace std;
 
@@ -32,6 +33,11 @@ void exitWithError(const string& message);
 
 
 int main(int argc, char** argv) {
+
+	Graph graph;
+
+	parseAndProcessArgs(argc, argv, graph);
+
 	cout << "Algorithmen und Datenstrukturen II" << endl
 	     << "Praktikum -- Uebung 1" << endl
 	     << "Jakob Schoettl <jschoett@hm.edu>" << endl << endl
@@ -40,14 +46,14 @@ int main(int argc, char** argv) {
 	     << " -p  Solve traveling salesman problem using Prim's algorithm" << endl
 	     << "Both options start the program in non-interactive mode." << endl << endl;
 
-	Graph graph;
-
-	parseAndProcessArgs(argc, argv, graph);
+	// In non-interactive mode, one can pipe the output to
+	// | awk 'BEGIN{RS=" "};{s+=$0};END{print s}'
+	// to calculate the sum of the cycle
 
 	showMenu();
 
-	while (1) {
-		cout << "Coose an option: ";
+	while (true) {
+		cout << "Choose an option: ";
 		char option;
 		cin >> option;
 		switch (option) {
@@ -92,7 +98,7 @@ Vertex* findOrInsertVertex(Graph& g, const string& vertexName) {
 
 void readGraphFromFile(Graph& graph, const string& filename) {
 	ifstream infile(filename.c_str());
-	if (!ifstream) {
+	if (!infile) {
 		exitWithError("Error opening graph description file: " + filename);
 	}
 	string line;
@@ -104,9 +110,6 @@ void readGraphFromFile(Graph& graph, const string& filename) {
 		Vertex* a = findOrInsertVertex(graph, name1);
 		Vertex* b = findOrInsertVertex(graph, name2);
 		graph.insertEdge(a, b, weight);
-	}
-	if (!ifstream) {
-		exitWithError("Error processing graph description file: " + filename);
 	}
 }
 
@@ -163,8 +166,8 @@ void showMenu() {
 	     << "m Show this menu" << endl
 	     << "v Insert vertex" << endl
 	     << "e Insert edge" << endl
-	     << "c Calculate solution for the" << endl
-	     << "  traveling salesman problem" << endl
+	     << "p Solve traveling salesman problem using Prim's algorithm" << endl
+	     << "a Solve traveling salesman problem using simulated annealing" << endl
 	     << "q Quit" << endl << endl;
 }
 
@@ -190,13 +193,12 @@ void testGraph(Graph& graph) {
 }
 
 void parseAndProcessArgs(int argc, char** argv, Graph& graph) {
-	if (argc == 1) {
+	if (argc == 2) {
 		readGraphFromFile(graph, argv[1]);
-		operationComplete("Read graph description file.");
 		return;
 	}
 
-	if (argc == 2) {
+	if (argc == 3) {
 		string option = argv[1];
 		readGraphFromFile(graph, argv[2]);
 
@@ -210,7 +212,7 @@ void parseAndProcessArgs(int argc, char** argv, Graph& graph) {
 		exit(EXIT_SUCCESS);
 	}
 
-	if (argc > 2) {
+	if (argc > 3) {
 		exitWithError("Invalid number of arguments.");
 	}
 }
